@@ -1,18 +1,143 @@
 <!doctype html>
-<html lang="en" class="dark"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="color-scheme" content="light dark"><title>Agentic AI Workbench</title><link rel="stylesheet" href="/static/style.css?v=9"></head>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <title>ForgeLocal</title>
+  <script>try{if(localStorage.getItem("forgelocal-theme")==="dark")document.documentElement.classList.add("dark")}catch(_){}</script>
+  <link rel="stylesheet" href="/static/style.css?v=10">
+</head>
 <body>
-  <header class="app-header"><div class="brand-group"><button type="button" id="toggle-left-sidebar" class="icon-button mobile-drawer-button" aria-label="Open chat history">☰</button><div class="brand-mark" aria-hidden="true">A</div><div><div class="brand-name">Agentic AI Workbench</div><div class="brand-subtitle">Local workspace</div></div></div><div class="header-actions"><button type="button" id="open-privacy-dashboard-btn" class="status-chip" aria-label="View system status"><span id="ollama-dot" class="status-dot" aria-hidden="true"></span><span id="ollama-status-text">Checking system</span></button><button type="button" id="theme-toggle-btn" class="icon-button" title="Toggle colour theme" aria-label="Toggle colour theme">◐</button><button type="button" id="toggle-right-sidebar" class="header-button">Documents</button></div></header>
+  <header class="app-header">
+    <div class="brand-group">
+      <button type="button" id="toggle-left-sidebar" class="icon-button nav-toggle" aria-label="Open workspace navigation"><span aria-hidden="true">☰</span></button>
+      <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></div>
+      <div class="brand-copy"><div class="brand-name">ForgeLocal</div><div class="brand-subtitle">Industrial intelligence workspace</div></div>
+    </div>
+    <div class="header-context" aria-label="Current workspace"><span>Workspace</span><i aria-hidden="true">/</i><strong>New analysis</strong></div>
+    <div class="header-actions">
+      <span id="header-activity-pulse" class="header-activity-pulse" hidden><i aria-hidden="true"></i><span>Analysis running</span></span>
+      <button type="button" id="open-privacy-dashboard-btn" class="status-chip" aria-label="View local runtime status"><span id="ollama-dot" class="status-dot" aria-hidden="true"></span><span class="status-copy">Local-only</span><span class="status-separator" aria-hidden="true">·</span><span id="ollama-status-text">Checking</span></button>
+      <button type="button" id="toggle-right-sidebar" class="header-button documents-button" aria-label="Open documents"><span aria-hidden="true">▣</span><span class="documents-label">Documents</span></button>
+      <button type="button" id="theme-toggle-btn" class="icon-button" title="Switch to dark theme" aria-label="Switch to dark theme" aria-pressed="false"><span id="theme-toggle-icon" aria-hidden="true">◐</span></button>
+    </div>
+  </header>
+
   <button type="button" id="sidebar-scrim" class="sidebar-scrim" aria-label="Close open panel"></button>
+
   <main id="app-layout" class="app-shell">
-    <aside id="left-sidebar" class="sidebar sidebar--left" aria-label="Chat history and models"><button type="button" id="new-chat-btn" class="button button--secondary button--full">+ New chat</button><section class="sidebar-section"><div class="section-heading"><span>Recent chats</span><span class="section-note">History</span></div><div id="session-list" class="session-list"><p class="empty-state">No saved chats yet.</p></div></section><details class="sidebar-section models-panel" open><summary><span>Models</span><span class="section-note">Local</span></summary><p class="section-copy">Choose Automatic, or select an available model for a specific task.</p><div id="model-list" class="model-list"><p class="empty-state">Checking local models…</p></div></details></aside>
-    <section id="main-workspace" class="workspace" aria-label="Task workspace"><div class="workspace-inner">
-      <form id="task-form" class="task-card"><div class="task-card__header"><div><h1>What would you like to work on?</h1><p>Ask a question, then use selected files when they are relevant.</p></div><label class="model-field" for="model-select">Model<select id="model-select"><option value="auto">Automatic</option></select></label></div><div id="prompt-row" class="prompt-row" aria-label="Suggested tasks"></div><label class="sr-only" for="task-input">Task</label><textarea id="task-input" rows="4" placeholder="Describe what you need. For example: “Compare the selected procedures and make a concise briefing.”"></textarea><div id="selected-document-summary" class="selected-document-summary">No documents selected for this task.</div><div class="task-actions"><div id="task-progress" class="task-progress" role="status" aria-live="polite"><span class="progress-dot" aria-hidden="true"></span><span id="task-progress-text">Ready when you are</span></div><div class="task-actions__buttons"><button type="button" id="clear-btn" class="button button--quiet">Clear</button><button type="button" id="stop-btn" class="button button--danger" hidden>Stop</button><button type="submit" id="run-btn" class="button button--primary">Run task</button></div></div></form>
-      <section class="answer-panel" aria-labelledby="answer-heading"><div class="answer-panel__header"><div><h2 id="answer-heading">Answer</h2><p id="answer-caption">Your answer will appear here.</p></div><div id="answer-actions" class="answer-actions" hidden><button type="button" id="copy-answer-btn" class="button button--secondary">Copy</button><details class="export-menu"><summary class="button button--secondary">Export</summary><div class="export-menu__items"><button type="button" id="export-docx-btn">Word document</button><button type="button" id="export-md-btn">Markdown</button></div></details></div></div><div id="direct-output-box" class="direct-output-box" aria-live="polite"><div class="output-placeholder"><div><strong>What would you like to work on?</strong><span>Start with a question, choose a starter, or add documents.</span><div class="empty-actions"><button type="button" id="empty-upload-btn" class="button button--secondary">Add documents</button><button type="button" class="chip" data-prompt="Summarize the key points and recommended actions.">Summarize</button><button type="button" class="chip" data-prompt="Compare the selected documents and highlight differences.">Compare files</button><button type="button" class="chip" data-prompt="Create a concise briefing from the selected information.">Create a briefing</button></div></div></div></div><button type="button" id="jump-latest-btn" class="jump-latest" hidden>Jump to latest</button><div id="answer-sources" class="answer-sources" hidden></div></section>
-      <details id="execution-steps-drawer" class="execution-drawer"><summary><span>Activity</span><span id="step-count-badge" class="count-badge">0 steps</span></summary><div id="trace-logs" class="trace-logs"><p class="empty-state">Task activity will appear here.</p></div></details>
-    </div></section>
-    <aside id="right-sidebar" class="sidebar sidebar--right" aria-label="Document workspace"><div class="document-header"><div><h2>Files</h2><p>Add and select the files for this task.</p></div><button type="button" class="icon-button mobile-close" data-close-drawer="right" aria-label="Close document panel">×</button></div><form id="upload-form" class="upload-form"><div id="drop-zone" class="drop-zone" tabindex="0" role="button" aria-label="Choose a file to upload"><div class="drop-zone__icon">↑</div><strong class="drop-text">Add documents</strong><span>Drop a file here or choose it from this computer</span><input type="file" id="file-input" hidden></div><label class="input-label" for="mode-select">Processing<select id="mode-select"><option value="auto">Automatic document processing</option><option value="pid">P&amp;ID diagram intelligence</option><option value="handwriting">Handwriting transcription</option><option value="engineering_drawing">Engineering drawing or schematic</option></select></label><button type="submit" id="ingest-btn" class="button button--secondary button--full">Add document</button></form><div id="ingest-log" class="ingest-log" role="status" aria-live="polite"></div><section class="sidebar-section attachment-section"><div class="section-heading"><span>Files</span><span class="section-note">Selected files guide each task</span></div><div id="attached-document-list" class="attached-document-list"><p class="empty-state">No files added.</p></div></section><section class="sidebar-section"><button type="button" id="open-pid-viewer-btn" class="button button--quiet button--full">Open P&amp;ID viewer</button></section><section class="sidebar-section"><div class="section-heading"><span>Deliverables</span><span class="section-note">This chat</span></div><div id="output-list" class="output-list"><p class="empty-state">Generated files will appear here.</p></div></section></aside>
+    <aside id="left-sidebar" class="sidebar sidebar--left" aria-label="Workspace navigation">
+      <div class="sidebar-topline"><span class="sidebar-label">Workspace</span><button type="button" class="icon-button mobile-close" data-close-drawer="left" aria-label="Close workspace navigation">×</button></div>
+      <button type="button" id="new-chat-btn" class="button button--primary button--full">+ New analysis</button>
+
+      <nav class="workspace-nav" aria-label="Workspace sections">
+        <button type="button" class="workspace-nav__item is-active" data-focus-task><span aria-hidden="true">□</span><span>Analysis</span></button>
+        <button type="button" class="workspace-nav__item" data-open-documents><span aria-hidden="true">▤</span><span>Documents</span></button>
+        <button type="button" class="workspace-nav__item" data-open-pid><span aria-hidden="true">⌗</span><span>Drawings</span></button>
+        <button type="button" class="workspace-nav__item" data-focus-deliverables><span aria-hidden="true">↓</span><span>Deliverables</span></button>
+      </nav>
+
+      <section class="sidebar-section recent-section" aria-labelledby="recent-heading">
+        <div class="section-heading"><span id="recent-heading">Recent analysis</span><span class="section-note">This device</span></div>
+        <div id="session-list" class="session-list"><p class="empty-state">No saved analysis yet.</p></div>
+      </section>
+
+      <details class="sidebar-section models-panel">
+        <summary class="model-panel-summary"><span class="model-panel-title"><small>System</small><strong>Models</strong></span><span class="models-disclosure"><span class="disclosure-closed">View</span><span class="disclosure-open">Close</span><i aria-hidden="true">⌄</i></span></summary>
+        <p class="section-copy">Available local models and their intended use.</p>
+        <div id="model-list" class="model-list"><p class="empty-state">Checking local models…</p></div>
+      </details>
+    </aside>
+
+    <section id="main-workspace" class="workspace" aria-label="Analysis workspace">
+      <div class="workspace-inner">
+        <section class="workspace-intro" aria-labelledby="workspace-title">
+          <div><span class="eyebrow">New analysis</span><h1 id="workspace-title">Turn local files into defensible work.</h1><p>Inspect documents, drawings and data without sending them outside this device.</p></div>
+          <button type="button" class="quiet-link" data-open-privacy>How local processing works <span aria-hidden="true">→</span></button>
+        </section>
+
+        <section class="local-processing-map" aria-label="Local processing path">
+          <div class="local-processing-map__heading"><span>Local processing path</span><small>This device only</small></div>
+          <div class="local-processing-map__steps">
+            <span data-pipeline-step="device"><i aria-hidden="true">□</i><strong>Device</strong><small>Source added</small></span><b aria-hidden="true"></b>
+            <span data-pipeline-step="index"><i aria-hidden="true">⌁</i><strong>OCR &amp; index</strong><small>Local extraction</small></span><b aria-hidden="true"></b>
+            <span data-pipeline-step="analysis"><i aria-hidden="true">◌</i><strong>Analyze</strong><small>Selected model</small></span><b aria-hidden="true"></b>
+            <span data-pipeline-step="deliver"><i aria-hidden="true">↓</i><strong>Deliver</strong><small>Saved locally</small></span>
+          </div>
+        </section>
+
+        <section class="workflow-grid" aria-label="Choose a workflow">
+          <button type="button" class="workflow-card" data-workflow="documents" data-open-documents>
+            <span class="workflow-icon" aria-hidden="true">▤</span><span><strong>Analyze documents</strong><small>Extract findings from selected source files.</small></span><b aria-hidden="true">→</b>
+          </button>
+          <button type="button" class="workflow-card" data-workflow="drawing" data-start-drawing-upload>
+            <span class="workflow-icon" aria-hidden="true">⌗</span><span><strong>Inspect a drawing</strong><small>Add a drawing, then find equipment, tags and control points.</small></span><b aria-hidden="true">→</b>
+          </button>
+          <button type="button" class="workflow-card" data-workflow="data" data-prompt="Analyze the selected spreadsheet. Highlight trends, totals, and anomalies.">
+            <span class="workflow-icon" aria-hidden="true">▦</span><span><strong>Review data</strong><small>Check patterns, quality and exceptions.</small></span><b aria-hidden="true">→</b>
+          </button>
+          <button type="button" class="workflow-card" data-workflow="briefing" data-prompt="Create a concise briefing from the selected information.">
+            <span class="workflow-icon" aria-hidden="true">▱</span><span><strong>Create a briefing</strong><small>Build a concise, shareable deliverable.</small></span><b aria-hidden="true">→</b>
+          </button>
+        </section>
+
+        <form id="task-form" class="task-card">
+          <div class="task-card__header">
+            <div><span class="eyebrow">Objective</span><h2>What needs to be assessed?</h2><p>Describe the outcome you need. Add source files when they should inform the work.</p></div>
+            <div class="model-field">
+              <span class="model-field__label">Model</span>
+              <input id="model-select" type="hidden" value="auto">
+              <details id="model-picker" class="model-picker">
+                <summary><span class="model-picker__current"><strong id="model-picker-title">Automatic routing</strong><small id="model-picker-caption">Best available model for each task.</small></span><i aria-hidden="true">⌄</i></summary>
+                <div id="model-picker-options" class="model-picker-options" role="listbox" aria-label="Choose a processing model"></div>
+              </details>
+            </div>
+          </div>
+          <div id="prompt-row" class="prompt-row" aria-label="Suggested tasks"></div>
+          <label class="sr-only" for="task-input">Objective</label>
+          <textarea id="task-input" rows="4" placeholder="For example: Compare the selected procedures and identify the actions that need an owner."></textarea>
+          <div id="selected-document-summary" class="selected-document-summary">No source files selected. You can still ask a general question.</div>
+          <div class="task-actions">
+            <div id="task-progress" class="task-progress" role="status" aria-live="polite"><span class="progress-dot" aria-hidden="true"></span><span id="task-progress-text">Ready for a local analysis</span></div>
+            <div class="task-actions__buttons"><button type="button" id="clear-btn" class="button button--quiet">Clear</button><button type="button" id="stop-btn" class="button button--danger" hidden>Stop</button><button type="submit" id="run-btn" class="button button--primary">Analyze</button></div>
+          </div>
+          <div id="processing-timeline" class="processing-timeline" hidden aria-label="Analysis progress">
+            <span data-timeline-step="prepare">Prepare</span><i></i><span data-timeline-step="sources">Sources</span><i></i><span data-timeline-step="reason">Reason</span><i></i><span data-timeline-step="complete">Complete</span>
+          </div>
+        </form>
+
+        <section class="answer-panel" aria-labelledby="answer-heading">
+          <div class="answer-panel__header"><div><span class="eyebrow">Result</span><h2 id="answer-heading">Analysis output</h2><p id="answer-caption">Evidence, recommendations and generated deliverables will appear here.</p></div><div id="answer-actions" class="answer-actions" hidden><button type="button" id="copy-answer-btn" class="button button--secondary">Copy</button><details class="export-menu"><summary class="button button--secondary">Export</summary><div class="export-menu__items"><button type="button" id="export-docx-btn">Word document</button><button type="button" id="export-md-btn">Markdown</button></div></details></div></div>
+          <div id="direct-output-box" class="direct-output-box" aria-live="polite"><div class="output-placeholder"><div><span class="output-placeholder__mark" aria-hidden="true">□</span><strong>Start with a clear objective.</strong><span>Select a workflow, add local source files, or describe the result you need.</span><button type="button" class="button button--secondary" data-open-documents>Add source files</button></div></div></div>
+          <button type="button" id="jump-latest-btn" class="jump-latest" hidden>Jump to latest</button>
+          <div id="answer-sources" class="answer-sources" hidden></div>
+          <div id="export-status" class="export-status" role="status" aria-live="polite"></div>
+        </section>
+
+        <details id="execution-steps-drawer" class="execution-drawer"><summary><span>Audit trail</span><span id="step-count-badge" class="count-badge">0 events</span></summary><div id="trace-logs" class="trace-logs"><p class="empty-state">Processing events will be recorded here.</p></div></details>
+        <footer id="ambient-trust-layer" class="ambient-trust-layer" aria-live="polite"><span><i aria-hidden="true"></i>Local processing</span><span id="trust-source-count">0 sources indexed</span><span id="trust-model">Automatic routing</span></footer>
+      </div>
+    </section>
+
+    <aside id="right-sidebar" class="sidebar sidebar--right" aria-label="Document workspace">
+      <div class="document-header"><div><span class="eyebrow">Context</span><h2>Documents</h2><p>Add source files and choose what should inform this analysis.</p></div><button type="button" class="icon-button mobile-close" data-close-drawer="right" aria-label="Close documents">×</button></div>
+      <form id="upload-form" class="upload-form"><div id="drop-zone" class="drop-zone" tabindex="0" role="button" aria-label="Choose a file to upload"><div class="drop-zone__icon" aria-hidden="true">↑</div><strong class="drop-text">Add source files</strong><span>Drop a file here or browse this device</span><input type="file" id="file-input" hidden></div><label class="input-label" for="mode-select">Processing<select id="mode-select"><option value="auto">Choose automatically</option><option value="pid">P&amp;ID diagram intelligence</option><option value="handwriting">Handwriting transcription</option><option value="engineering_drawing">Engineering drawing or schematic</option></select></label><button type="submit" id="ingest-btn" class="button button--secondary button--full">Process source file</button></form>
+      <div id="ingest-log" class="ingest-log" role="status" aria-live="polite"></div>
+      <section class="sidebar-section attachment-section"><div class="section-heading"><span>Source files</span><span class="section-note">Selected files inform analysis</span></div><div id="attached-document-list" class="attached-document-list"><p class="empty-state">No files added.</p></div></section>
+      <section class="sidebar-section"><button type="button" id="open-pid-viewer-btn" class="button button--secondary button--full">Open drawing inspector</button></section>
+      <section id="deliverables-section" class="sidebar-section"><div class="section-heading"><span>Deliverables</span><span class="section-note">This analysis</span></div><div id="output-list" class="output-list"><p class="empty-state">Generated files will appear here.</p></div></section>
+    </aside>
   </main>
-  <div id="pid-modal" class="modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="pid-modal-title"><div class="modal modal--pid"><header class="modal__header"><div><h2 id="pid-modal-title">P&amp;ID viewer</h2><p id="pid-document-caption">Select a processed drawing to inspect it.</p></div><div class="modal__controls"><select id="pid-doc-select" aria-label="Select P&amp;ID drawing"><option value="">Select drawing</option></select><button type="button" id="pid-prev-page-btn" class="button button--quiet">Previous</button><span id="pid-page-status" class="page-status">Page —</span><button type="button" id="pid-next-page-btn" class="button button--quiet">Next</button><button type="button" id="pid-fit-btn" class="button button--quiet">Fit</button><button type="button" id="pid-zoom-out-btn" class="button button--quiet" aria-label="Zoom out">−</button><span id="pid-zoom-label" class="page-status">100%</span><button type="button" id="pid-zoom-in-btn" class="button button--quiet" aria-label="Zoom in">+</button><button type="button" id="close-pid-modal-btn" class="icon-button" aria-label="Close P&amp;ID viewer">×</button></div></header><div class="pid-toolbar"><label class="pid-search"><span>Find tag</span><input id="pid-tag-search" type="search" placeholder="Search OCR text or equipment"></label><label><input type="checkbox" id="toggle-symbols-cb" checked> Symbols</label><label><input type="checkbox" id="toggle-texts-cb" checked> OCR text</label><div class="overlay-legend"><span><i class="legend-symbol"></i>Equipment</span><span><i class="legend-text"></i>OCR text</span><span><i class="legend-match"></i>Search match</span></div></div><div class="pid-modal-body"><div id="pid-viewport" class="pid-viewport"><div id="pid-stage" class="pid-stage"><div id="pid-canvas-container" class="pid-canvas-container"><p class="empty-state">Select a processed P&amp;ID drawing.</p></div></div></div><aside id="pid-selection-details" class="pid-selection-details"><h3>Selected equipment</h3><p>Click an equipment outline to inspect its detected type, tag, and confidence.</p></aside></div></div></div>
-  <div id="privacy-dashboard-modal" class="modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="privacy-modal-title"><div class="modal modal--privacy"><header class="modal__header"><div><h2 id="privacy-modal-title">Local runtime status</h2><p>Availability is checked on this computer when you open this panel.</p></div><button type="button" id="close-privacy-modal-btn" class="icon-button" aria-label="Close local runtime status">×</button></header><div class="privacy-modal-body"><div class="status-grid"><div class="status-card"><span>Mode</span><strong id="privacy-mode-state">Configured locally</strong></div><div class="status-card"><span>External attempts</span><strong id="privacy-external-attempts">0</strong></div><div class="status-card"><span>Blocked attempts</span><strong id="privacy-blocked-count">0</strong></div><div class="status-card"><span>Socket monitor</span><strong id="privacy-monitor-state">Checking</strong></div></div><section><h3>Runtime checks</h3><p class="section-copy">Configured means the component is part of this local workspace. Available means this session found it. Verified means local storage or configuration was checked.</p><div id="privacy-startup-checks" class="checks-list"></div></section><section><h3>Local components</h3><div class="table-wrap"><table><thead><tr><th>Component</th><th>Location</th><th>State</th></tr></thead><tbody id="privacy-component-rows"></tbody></table></div></section><section><h3>Monitored application socket activity</h3><p class="section-copy">This records network sockets created by this application process. It does not claim to monitor every program on the computer.</p><div id="privacy-network-logs" class="privacy-log-container"></div></section></div></div></div>
-  <script src="/static/app.js?v=9"></script>
-</body></html>
+
+  <div id="pid-modal" class="modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="pid-modal-title"><div class="modal modal--pid"><header class="modal__header"><div><h2 id="pid-modal-title">Drawing inspector</h2><p id="pid-document-caption">Select a processed drawing to inspect it.</p></div><div class="modal__controls"><select id="pid-doc-select" aria-label="Select drawing"><option value="">Select drawing</option></select><button type="button" id="pid-prev-page-btn" class="button button--quiet">Previous</button><span id="pid-page-status" class="page-status">Page —</span><button type="button" id="pid-next-page-btn" class="button button--quiet">Next</button><button type="button" id="pid-fit-btn" class="button button--quiet">Fit</button><button type="button" id="pid-zoom-out-btn" class="button button--quiet" aria-label="Zoom out">−</button><span id="pid-zoom-label" class="page-status">100%</span><button type="button" id="pid-zoom-in-btn" class="button button--quiet" aria-label="Zoom in">+</button><button type="button" id="close-pid-modal-btn" class="icon-button" aria-label="Close drawing inspector">×</button></div></header><div class="pid-toolbar"><label class="pid-search"><span>Find tag</span><input id="pid-tag-search" type="search" placeholder="Search OCR text or equipment"></label><label><input type="checkbox" id="toggle-symbols-cb" checked> Equipment</label><label><input type="checkbox" id="toggle-texts-cb" checked> OCR text</label><div class="overlay-legend"><span><i class="legend-symbol"></i>Equipment</span><span><i class="legend-text"></i>OCR text</span><span><i class="legend-match"></i>Match</span></div></div><div class="pid-modal-body"><div id="pid-viewport" class="pid-viewport"><div id="pid-stage" class="pid-stage"><div id="pid-canvas-container" class="pid-canvas-container"><p class="empty-state">Select a processed drawing.</p></div></div></div><aside id="pid-selection-details" class="pid-selection-details"><h3>Selected equipment</h3><p>Click an equipment outline to inspect its detected type, tag and confidence.</p></aside></div></div></div>
+
+  <div id="privacy-dashboard-modal" class="modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="privacy-modal-title"><div class="modal modal--privacy"><header class="modal__header"><div><h2 id="privacy-modal-title">Local runtime status</h2><p>Availability is checked on this device when you open this panel.</p></div><button type="button" id="close-privacy-modal-btn" class="icon-button" aria-label="Close local runtime status">×</button></header><div class="privacy-modal-body"><div class="status-grid"><div class="status-card"><span>Mode</span><strong id="privacy-mode-state">Configured locally</strong></div><div class="status-card"><span>External attempts</span><strong id="privacy-external-attempts">0</strong></div><div class="status-card"><span>Blocked attempts</span><strong id="privacy-blocked-count">0</strong></div><div class="status-card"><span>Socket monitor</span><strong id="privacy-monitor-state">Checking</strong></div></div><section><h3>Runtime checks</h3><p class="section-copy">Configured means the component is part of this workspace. Available means this session found it. Verified means local storage or configuration was checked.</p><div id="privacy-startup-checks" class="checks-list"></div></section><section><h3>Local components</h3><div class="table-wrap"><table><thead><tr><th>Component</th><th>Location</th><th>State</th></tr></thead><tbody id="privacy-component-rows"></tbody></table></div></section><section><h3>Monitored application socket activity</h3><p class="section-copy">This records sockets created by this application process; it does not monitor every program on the device.</p><div id="privacy-network-logs" class="privacy-log-container"></div></section></div></div></div>
+
+  <div id="source-preview-modal" class="modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="source-preview-title"><div class="modal modal--preview"><header class="modal__header"><div><h2 id="source-preview-title">Source preview</h2><p id="source-preview-meta"></p></div><button type="button" id="close-source-preview-btn" class="icon-button" aria-label="Close source preview">×</button></header><div id="source-preview-content" class="preview-modal-body"></div></div></div>
+  <div id="deliverable-preview-modal" class="modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="deliverable-preview-title"><div class="modal modal--preview"><header class="modal__header"><div><h2 id="deliverable-preview-title">Deliverable preview</h2><p>Review the generated content before creating a file.</p></div><button type="button" id="close-deliverable-preview-btn" class="icon-button" aria-label="Close deliverable preview">×</button></header><div id="deliverable-preview-content" class="preview-modal-body"></div><footer class="preview-modal-footer"><button type="button" id="create-preview-docx-btn" class="button button--secondary">Create Word document</button><button type="button" id="create-preview-md-btn" class="button button--primary">Create Markdown</button></footer></div></div>
+  <div id="command-palette-modal" class="modal-backdrop command-palette-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="command-palette-title"><div class="command-palette"><header><div><span class="eyebrow">Quick actions</span><h2 id="command-palette-title">Command palette</h2></div><kbd>Esc</kbd></header><input id="command-search" type="search" placeholder="Search actions" aria-label="Search actions"><div id="command-list" class="command-list"></div></div></div>
+
+  <script src="/static/app.js?v=12"></script>
+</body>
+</html>

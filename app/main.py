@@ -45,7 +45,7 @@ from app.security.component_registry import component_registry
 from app.security.network_monitor import network_monitor
 from app.security.security_policy import security_policy
 from app.security.startup_check import startup_checker
-from app.sessions import delete_session, get_session, list_sessions, save_session
+from app.sessions import delete_session, duplicate_session, get_session, list_sessions, save_session, set_session_pinned
 
 BASE_DIR = Path(__file__).parent.parent
 UPLOAD_DIR = BASE_DIR / "data" / "uploads"
@@ -133,6 +133,22 @@ async def get_session_by_id(session_id: str):
 async def delete_session_by_id(session_id: str):
     success = delete_session(session_id)
     return {"success": success}
+
+
+class SessionPinRequest(BaseModel):
+    pinned: bool
+
+
+@app.post("/api/sessions/{session_id}/pin")
+async def pin_session(session_id: str, request: SessionPinRequest):
+    updated = set_session_pinned(session_id, request.pinned)
+    return updated or {"error": "Session not found"}
+
+
+@app.post("/api/sessions/{session_id}/duplicate")
+async def duplicate_saved_session(session_id: str):
+    duplicate = duplicate_session(session_id)
+    return duplicate or {"error": "Session not found"}
 
 
 @app.post("/api/upload")
@@ -338,11 +354,11 @@ async def download_output(filename: str):
     return FileResponse(str(path), filename=filename)
 
 
-async def _run_agent_task(websocket: WebSocket, task: str, selected_model: str, session_id: str):
+async def _run_agent_task(websocket: WebSocket, task: str, selected_model: str, session_id: str, source_count: int = 0):
     accumulated_output = []
     trace_logs = []
     deliverables = []
-    save_session(session_id, {"task": task, "model": selected_model, "output": "Processing task...", "trace_logs": [], "deliverables": []})
+    save_session(session_id, {"task": task, "model": selected_model, "source_count": source_count, "output": "Processing task...", "trace_logs": [], "deliverables": []})
     try:
         async for event in run_agent(task, selected_model=selected_model):
             await websocket.send_json({**event, "session_id": session_id})
@@ -355,10 +371,10 @@ async def _run_agent_task(websocket: WebSocket, task: str, selected_model: str, 
                 if event_type == "tool_call" and isinstance(args, dict) and args.get("filename"):
                     deliverables.append(args["filename"])
             elif event_type in ("final", "error"):
-                save_session(session_id, {"task": task, "model": selected_model, "output": "".join(accumulated_output) or event.get("content", ""), "trace_logs": trace_logs, "deliverables": deliverables})
+                save_session(session_id, {"task": task, "model": selected_model, "source_count": source_count, "output": "".join(accumulated_output) or event.get("content", ""), "trace_logs": trace_logs, "deliverables": deliverables})
     except asyncio.CancelledError:
         message = "Task stopped by the user."
-        save_session(session_id, {"task": task, "model": selected_model, "output": "".join(accumulated_output) or message, "trace_logs": trace_logs, "deliverables": deliverables})
+        save_session(session_id, {"task": task, "model": selected_model, "source_count": source_count, "output": "".join(accumulated_output) or message, "trace_logs": trace_logs, "deliverables": deliverables})
         try:
             await websocket.send_json({"type": "cancelled", "content": message, "session_id": session_id})
         except Exception:
@@ -388,7 +404,8 @@ async def agent_ws(websocket: WebSocket):
             session_id = data.get("session_id") or f"session_{int(time.time()*1000)}"
             if not task:
                 continue
-            workflow = asyncio.create_task(_run_agent_task(websocket, task, selected_model, session_id))
+            source_count = int(data.get("source_count", 0) or 0)
+            workflow = asyncio.create_task(_run_agent_task(websocket, task, selected_model, session_id, source_count))
             active_agent_tasks[session_id] = workflow
             try:
                 await workflow
